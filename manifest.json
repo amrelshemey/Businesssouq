@@ -1,0 +1,15 @@
+{
+  "name": "سوق - أرض الثقة",
+  "short_name": "سوق",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#1a1a1a",
+  "theme_color": "#f4d03f",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

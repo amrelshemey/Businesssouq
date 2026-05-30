@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>سوق - أرض الثقة</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0d0d0d;
+            color: #e0cfa5;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 750px; width: 100%;
+            background: #1f1a10;
+            border: 2px solid #8b7355;
+            border-radius: 20px; padding: 20px;
+            box-shadow: 0 0 30px rgba(212, 167, 70, 0.3);
+        }
+        h1 { text-align: center; color: #f4d03f; text-shadow: 0 0 10px #b8860b; margin-bottom: 10px; font-size: 2em; }
+        .rank-badge {
+            text-align: center; font-size: 1.2em; font-weight: bold; margin-bottom: 15px;
+            padding: 8px; border-radius: 20px; background: #2a2418; border: 1px solid #6b5a3e;
+        }
+        .panel { background: #2a2418; border: 1px solid #6b5a3e; border-radius: 15px; padding: 15px; margin-bottom: 15px; }
+        .flex-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .stat-box {
+            background: #3e3524; border-radius: 10px; padding: 10px 15px; text-align: center;
+            flex: 1; min-width: 80px; border: 1px solid #5e4a32;
+        }
+        .stat-box span { display: block; font-size: 1.8em; font-weight: bold; color: #f4d03f; }
+        .trader-card {
+            background: #3e3524; border: 1px solid #8b7355; border-radius: 12px; padding: 12px;
+            width: 30%; min-width: 130px; text-align: center; transition: transform 0.2s;
+        }
+        .trader-card:hover { transform: translateY(-3px); }
+        .trader-card h4 { color: #f4d03f; margin-bottom: 5px; }
+        .trust-bar { height: 6px; background: #555; border-radius: 3px; margin: 5px 0; overflow: hidden; }
+        .trust-fill { height: 100%; border-radius: 3px; }
+        button {
+            background: #8b7355; border: none; color: #fff; padding: 10px 18px; border-radius: 25px;
+            cursor: pointer; font-weight: bold; font-size: 1em; transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+        }
+        button:hover { background: #a0845c; transform: translateY(-2px); box-shadow: 0 5px 12px rgba(212,167,70,0.4); }
+        button.danger { background: #8b3a3a; }
+        button.danger:hover { background: #a04545; }
+        select, input {
+            background: #1f1a10; border: 1px solid #8b7355; color: #e0cfa5; padding: 8px; border-radius: 8px;
+            margin: 3px; font-size: 1em;
+        }
+        .log { max-height: 180px; overflow-y: auto; background: #110d07; padding: 10px; border-radius: 10px; font-size: 0.85em; border: 1px solid #5e4a32; }
+        .log p { margin: 4px 0; border-bottom: 1px dotted #3e3524; padding-bottom: 3px; }
+        .good { color: #a5d6a5; }
+        .bad  { color: #e57373; }
+        .warn { color: #ffb74d; }
+        .special { color: #ce93d8; font-weight: bold; }
+        hr { border-color: #5e4a32; margin: 10px 0; }
+        .vip-msg { background: #2e1a3a; border: 1px solid #ce93d8; border-radius: 8px; padding: 8px; margin: 8px 0; color: #e1bee7; font-size: 0.9em; display: none; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🏛️ سوق - أرض الثقة</h1>
+    <div class="rank-badge" id="rankDisplay">لقبك: الغريب (The Stranger)</div>
+    <div class="panel">
+        <div class="flex-row">
+            <div class="stat-box">🌾 قمح<br><span id="playerWheat">100</span></div>
+            <div class="stat-box">🪵 خشب<br><span id="playerWood">50</span></div>
+            <div class="stat-box">⭐ سمعة<br><span id="playerTrust">50</span></div>
+            <div class="stat-box">💰 ثروة<br><span id="playerWealth">150</span></div>
+        </div>
+    </div>
+    <div class="vip-msg" id="vipMessage"></div>
+    <div class="panel">
+        <h3>👥 تجار السوق</h3>
+        <div class="flex-row" id="traderContainer"></div>
+    </div>
+    <div class="panel">
+        <h3>🤝 اعقد صفقة جديدة</h3>
+        <div class="flex-row"><label>اختر تاجراً:</label><select id="traderSelect"></select></div>
+        <div class="flex-row" style="margin:5px 0;">
+            <label>أعطي:</label>
+            <input type="number" id="giveAmount" min="1" value="10" style="width:70px">
+            <select id="giveResource"><option value="wheat">🌾 قمح</option><option value="wood">🪵 خشب</option></select>
+            <label>مقابل:</label>
+            <input type="number" id="receiveAmount" min="1" value="5" style="width:70px">
+            <select id="receiveResource"><option value="wood">🪵 خشب</option><option value="wheat">🌾 قمح</option></select>
+        </div>
+        <div class="flex-row">
+            <button onclick="proposeTrade()">📨 اعرض الصفقة</button>
+            <button class="danger" onclick="betrayLastTrader()" id="betrayBtn" style="display:none;">🗡️ اخن آخر تاجر</button>
+        </div>
+    </div>
+    <div class="panel">
+        <h3>📜 سجل الأحداث</h3>
+        <div class="log" id="logContainer"></div>
+    </div>
+</div>
+<script>
+    const player = { wheat: 100, wood: 50, trust: 50 };
+    const traders = [
+        { name: 'أبو الحسن', wheat: 80, wood: 40, trustTowardsPlayer: 60, honesty: 0.9, fairness: 0.7, color: '#d4a76a' },
+        { name: 'الخواجة يعقوب', wheat: 50, wood: 90, trustTowardsPlayer: 40, honesty: 0.5, fairness: 0.4, color: '#b0b0b0' },
+        { name: 'ستي زينب', wheat: 120, wood: 20, trustTowardsPlayer: 80, honesty: 0.95, fairness: 0.8, color: '#e6b8c6' }
+    ];
+    let logEntries = [];
+    let lastTradeTraderIndex = -1, lastTradeAmount = 0, lastTradeResource = '';
+    const ranks = [
+        { name: 'الغريب', en: 'The Stranger', min: 0, max: 200, color: '#9e9e9e', badge: '⬜' },
+        { name: 'التاجر', en: 'The Merchant', min: 201, max: 1000, color: '#8bc34a', badge: '🟢' },
+        { name: 'الصيرفي', en: 'The Banker', min: 1001, max: 5000, color: '#64b5f6', badge: '🔵' },
+        { name: 'الوزير', en: 'The Vizier', min: 5001, max: 20000, color: '#ce93d8', badge: '🟣' },
+        { name: 'الأمير', en: 'The Prince', min: 20001, max: 100000, color: '#ffd700', badge: '🟡' },
+        { name: 'السلطان', en: 'The Sultan', min: 100001, max: 999999, color: '#ff9800', badge: '👑' },
+        { name: 'الخلدوني', en: 'The Khaldoun', min: 1000000, max: Infinity, color: '#000', badge: '🌑' }
+    ];
+    function getWealth() { return player.wheat + player.wood; }
+    function getRank() { const w = getWealth(); for (let i = ranks.length - 1; i >= 0; i--) { if (w >= ranks[i].min) return ranks[i]; } return ranks[0]; }
+    function applyRankPrivileges(rank) {
+        const vipDiv = document.getElementById('vipMessage'); vipDiv.style.display = 'none'; document.getElementById('betrayBtn').style.display = 'none';
+        if (rank.name === 'الصيرفي' || rank.name === 'الوزير' || rank.name === 'الأمير' || rank.name === 'السلطان' || rank.name === 'الخلدوني') { vipDiv.style.display = 'block'; vipDiv.innerHTML = `🔹 امتياز الصيرفي: تستطيع الإقراض بفائدة.`; }
+        if (rank.name === 'الوزير' || rank.name === 'الأمير' || rank.name === 'السلطان' || rank.name === 'الخلدوني') { vipDiv.innerHTML += `<br>🟣 امتياز الوزير: تصلك تنبيهات السوق قبل الآخرين.`; }
+        if (rank.name === 'الأمير' || rank.name === 'السلطان' || rank.name === 'الخلدوني') { vipDiv.innerHTML += `<br>🟡 امتياز الأمير: هالة ذهبية في السوق. خزنة الياقوت مفعلة.`; }
+        if (rank.name === 'السلطان' || rank.name === 'الخلدوني') { vipDiv.innerHTML += `<br>👑 امتياز السلطان: تستطيع إصدار فرمان أسبوعي.`; }
+        if (rank.name === 'الخلدوني') { vipDiv.innerHTML += `<br>🌑 امتياز الخلدوني: تمثال في الساحة، و 1% من كل صفقة.`; }
+    }
+    function updateUI() {
+        const wealth = getWealth(); const rank = getRank();
+        document.getElementById('playerWheat').textContent = player.wheat;
+        document.getElementById('playerWood').textContent = player.wood;
+        document.getElementById('playerTrust').textContent = player.trust;
+        document.getElementById('playerWealth').textContent = wealth;
+        const rankDisplay = document.getElementById('rankDisplay');
+        rankDisplay.textContent = `${rank.badge} لقبك: ${rank.name} (${rank.en})`;
+        rankDisplay.style.backgroundColor = rank.color + '22'; rankDisplay.style.borderColor = rank.color; rankDisplay.style.color = rank.color; rankDisplay.style.textShadow = `0 0 8px ${rank.color}`;
+        applyRankPrivileges(rank);
+        const container = document.getElementById('traderContainer'); container.innerHTML = '';
+        traders.forEach((t, i) => {
+            const card = document.createElement('div'); card.className = 'trader-card'; card.style.borderColor = t.color;
+            card.innerHTML = `<h4 style="color:${t.color}">${t.name}</h4><div>🌾${t.wheat} 🪵${t.wood}</div><div class="trust-bar"><div class="trust-fill" style="width:${t.trustTowardsPlayer}%; background:${t.color};"></div></div><small>ثقته بك: ${t.trustTowardsPlayer}</small>`;
+            container.appendChild(card);
+        });
+        const select = document.getElementById('traderSelect'); select.innerHTML = '';
+        traders.forEach((t, i) => { const opt = document.createElement('option'); opt.value = i; opt.textContent = t.name; select.appendChild(opt); });
+        const logDiv = document.getElementById('logContainer'); logDiv.innerHTML = '';
+        logEntries.slice().reverse().forEach(e => { const p = document.createElement('p'); p.innerHTML = e; logDiv.appendChild(p); });
+    }
+    function addLog(msg, cls = 'good') { logEntries.push(`<span class="${cls}">${msg}</span>`); if (logEntries.length > 50) logEntries.shift(); }
+    function evaluateFairness(giveR, giveA, recR, recA) { const vals = { wheat: 1.0, wood: 1.2 }; const gVal = vals[giveR] * giveA; const rVal = vals[recR] * recA; return gVal === 0 ? 0 : rVal / gVal; }
+    function proposeTrade() {
+        const idx = parseInt(document.getElementById('traderSelect').value);
+        const giveAmt = parseInt(document.getElementById('giveAmount').value), recAmt = parseInt(document.getElementById('receiveAmount').value);
+        const giveRes = document.getElementById('giveResource').value, recRes = document.getElementById('receiveResource').value;
+        if (isNaN(giveAmt) || isNaN(recAmt) || giveAmt <= 0 || recAmt <= 0) return alert('أدخل كميات صحيحة.');
+        if (giveRes === recRes) return alert('لا يمكن مقايضة نفس المورد.');
+        const trader = traders[idx];
+        if ((giveRes === 'wheat' && player.wheat < giveAmt) || (giveRes === 'wood' && player.wood < giveAmt)) return alert('لا تملك هذا المورد.');
+        if ((recRes === 'wheat' && trader.wheat < recAmt) || (recRes === 'wood' && trader.wood < recAmt)) { addLog(`رفض ${trader.name} الصفقة لعدم توفر المورد.`, 'bad'); return updateUI(); }
+        const fairness = evaluateFairness(giveRes, giveAmt, recRes, recAmt);
+        const trustF = trader.trustTowardsPlayer / 100;
+        const required = trader.fairness / (0.5 + trustF * 0.5);
+        if (fairness < required) { addLog(`رفض ${trader.name} عرضك (غير عادل).`, 'bad'); return updateUI(); }
+        const willCheat = Math.random() > (trader.honesty + trustF * 0.3);
+        if (giveRes === 'wheat') player.wheat -= giveAmt; else player.wood -= giveAmt;
+        if (willCheat) {
+            trader.wheat += (giveRes === 'wheat' ? giveAmt : 0); trader.wood += (giveRes === 'wood' ? giveAmt : 0);
+            addLog(`😈 ${trader.name} خدعك! أخذ ${giveAmt} ${giveRes==='wheat'?'قمح':'خشب'} ولم يعطك شيئاً.`, 'bad');
+            player.trust = Math.max(10, player.trust - 5); trader.trustTowardsPlayer = Math.max(10, trader.trustTowardsPlayer - 10);
+            addLog(`سمعتك تضررت (${player.trust}) وثقة ${trader.name} انخفضت.`, 'bad');
+            lastTradeTraderIndex = idx; lastTradeAmount = giveAmt; lastTradeResource = giveRes;
+            document.getElementById('betrayBtn').style.display = 'inline-block';
+        } else {
+            if (recRes === 'wheat') { trader.wheat -= recAmt; player.wheat += recAmt; } else { trader.wood -= recAmt; player.wood += recAmt; }
+            if (giveRes === 'wheat') trader.wheat += giveAmt; else trader.wood += giveAmt;
+            addLog(`✅ ${trader.name} قبل الصفقة. أعطاك ${recAmt} ${recRes==='wheat'?'قمح':'خشب'}.`, 'good');
+            player.trust = Math.min(100, player.trust + 2); trader.trustTowardsPlayer = Math.min(100, trader.trustTowardsPlayer + 5);
+            addLog(`سمعتك ارتفعت (${player.trust}) وثقة ${trader.name} زادت.`, 'good');
+            document.getElementById('betrayBtn').style.display = 'none';
+        }
+        updateUI();
+    }
+    function betrayLastTrader() {
+        if (lastTradeTraderIndex < 0) return alert('لا يوجد تاجر لتخونه.');
+        const trader = traders[lastTradeTraderIndex];
+        const recovery = lastTradeAmount * 2;
+        if (lastTradeResource === 'wheat') player.wheat += recovery; else player.wood += recovery;
+        if (lastTradeResource === 'wheat') trader.wheat = Math.max(0, trader.wheat - recovery); else trader.wood = Math.max(0, trader.wood - recovery);
+        addLog(`🗡️ خنت ${trader.name}! استرجعت ضعف ما أخذه وأكثر.`, 'warn');
+        player.trust = Math.max(5, player.trust - 15); trader.trustTowardsPlayer = Math.max(5, trader.trustTowardsPlayer - 30);
+        addLog(`سمعتك انهارت (${player.trust}). لا أحد يثق بالخونة.`, 'bad');
+        document.getElementById('betrayBtn').style.display = 'none'; lastTradeTraderIndex = -1;
+        updateUI();
+    }
+    function triggerWinterEvent() {
+        addLog('❄️ حدث الشتاء القارس! من يملك أقل من 200 خشب سيخسر 50% من قمحه.', 'warn');
+        const rank = getRank();
+        if (rank.name === 'الوزير' || rank.name === 'الأمير' || rank.name === 'السلطان' || rank.name === 'الخلدوني') {
+            addLog('🟣 بصفتك وزيراً أو أعلى، تلقيت تحذيراً مسبقاً وتم إعفاؤك من العقوبة.', 'special');
+        } else if (player.wood < 200) {
+            const lost = Math.floor(player.wheat * 0.5); player.wheat -= lost;
+            addLog(`لم تنجُ من الشتاء! خسرت ${lost} قمحاً.`, 'bad');
+        } else { addLog('نجوت من الشتاء لأن لديك خشباً كافياً.', 'good'); }
+        updateUI();
+    }
+    window.onload = () => {
+        addLog('أهلاً بك في سوق الثقة. ابنِ سمعتك واصعد سلم المجد.', 'good');
+        updateUI();
+        setTimeout(triggerWinterEvent, 60000);
+    };
+</script>
+</body>
+</html>
